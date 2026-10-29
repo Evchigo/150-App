@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="150">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#f5f5f7">
 
   <title>150</title>
 
@@ -17,11 +22,11 @@
 
     body {
       margin: 0;
+      min-height: 100vh;
       background: #f5f5f7;
       color: #1d1d1f;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
         "SF Pro Text", Arial, sans-serif;
-      min-height: 100vh;
     }
 
     .app {
@@ -42,7 +47,6 @@
     .header h1 {
       font-size: 34px;
       margin: 0 0 6px;
-      font-weight: 750;
     }
 
     .header p {
@@ -54,60 +58,83 @@
     .card {
       background: white;
       border-radius: 24px;
-      padding: 28px 20px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+      padding: 26px 22px;
       margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .today {
+      font-size: 23px;
+      font-weight: 700;
+      margin-bottom: 22px;
+      text-align: center;
+    }
+
+    .main-number {
+      font-size: 30px;
+      font-weight: 750;
+      text-align: center;
+      margin-bottom: 7px;
+    }
+
+    .completion {
+      color: #31a354;
+      font-size: 18px;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    .remaining {
+      text-align: center;
+      margin: 24px 0;
+      font-size: 17px;
+      color: #6e6e73;
+    }
+
+    .pace-section {
+      border-top: 1px solid #eeeeef;
+      padding-top: 20px;
+    }
+
+    .pace-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin: 9px 0;
+      font-size: 16px;
+    }
+
+    .pace-value {
+      font-weight: 650;
+      text-align: right;
+    }
+
+    .ahead {
+      color: #31a354;
+    }
+
+    .behind {
+      color: #d35454;
+    }
+
+    .on-target {
+      color: #31a354;
     }
 
     .week-label {
       text-align: center;
-      color: #6e6e73;
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-
-    .progress {
-      text-align: center;
-    }
-
-    .progress-main {
-      font-size: 34px;
-      font-weight: 750;
-      letter-spacing: -1px;
-      margin-bottom: 8px;
-    }
-
-    .percent {
-      font-size: 28px;
-      font-weight: 700;
-      color: #31a354;
-      margin-bottom: 16px;
-    }
-
-    .remaining {
-      color: #6e6e73;
-      font-size: 16px;
-    }
-
-    .complete {
-      color: #31a354;
-      font-weight: 600;
+      color: #8e8e93;
+      font-size: 13px;
+      margin-top: 20px;
     }
 
     h2 {
       font-size: 20px;
-      margin: 0 0 16px;
-    }
-
-    .history-empty {
-      color: #8e8e93;
-      text-align: center;
-      font-size: 15px;
-      padding: 18px 0;
+      margin: 0 0 14px;
     }
 
     .history-row {
-      padding: 14px 0;
+      padding: 15px 0;
       border-bottom: 1px solid #eeeeef;
     }
 
@@ -118,20 +145,57 @@
     .history-week {
       color: #6e6e73;
       font-size: 14px;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
-    .history-result {
+    .history-main {
       font-size: 17px;
-      font-weight: 600;
+      font-weight: 650;
     }
 
-    .sync-note {
+    .history-percent {
+      color: #6e6e73;
+      font-size: 14px;
+      margin-top: 3px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #8e8e93;
+      padding: 20px 0;
+      font-size: 14px;
+    }
+
+    .backup-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button,
+    .restore-label {
+      flex: 1;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      background: #efeff4;
+      color: #1d1d1f;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    #restoreFile {
+      display: none;
+    }
+
+    .saved-note {
       text-align: center;
       color: #8e8e93;
       font-size: 12px;
-      line-height: 1.4;
-      padding: 2px 14px;
+      margin-top: 16px;
     }
   </style>
 </head>
@@ -147,23 +211,35 @@
 
     <section class="card">
 
-      <div class="week-label" id="weekLabel"></div>
+      <div class="today" id="today"></div>
 
-      <div class="progress">
+      <div class="main-number">
+        <span id="minutes">0</span> / 150 minutes
+      </div>
 
-        <div class="progress-main">
-          <span id="currentMinutes">0</span> / 150 minutes
+      <div class="completion">
+        Week completion: <span id="percent">0%</span>
+      </div>
+
+      <div class="remaining" id="remaining">
+        150 minutes remaining
+      </div>
+
+      <div class="pace-section">
+
+        <div class="pace-row">
+          <span>Today's target:</span>
+          <span class="pace-value" id="target">0 min</span>
         </div>
 
-        <div class="percent" id="percentage">
-          = 0%
-        </div>
-
-        <div class="remaining" id="remaining">
-          150 minutes remaining
+        <div class="pace-row">
+          <span>Current pace:</span>
+          <span class="pace-value" id="pace"></span>
         </div>
 
       </div>
+
+      <div class="week-label" id="weekLabel"></div>
 
     </section>
 
@@ -173,313 +249,392 @@
 
       <div id="history"></div>
 
-    </section>
+      <div class="backup-buttons">
 
-    <div class="sync-note">
-      Exercise Minutes will come from Apple Health.
-    </div>
+        <button onclick="downloadBackup()">
+          Backup History
+        </button>
+
+        <label class="restore-label">
+          Restore History
+          <input
+            id="restoreFile"
+            type="file"
+            accept=".json,application/json"
+            onchange="restoreBackup(event)"
+          >
+        </label>
+
+      </div>
+
+      <div class="saved-note">
+        Backup history at the end of each month.
+      </div>
+
+    </section>
 
   </main>
 
-
   <script>
 
-    const WEEKLY_GOAL = 150;
+    const GOAL = 150;
 
-    /*
-      Later, our iPhone Shortcut will update this value
-      using your Apple Health Exercise Minutes.
-    */
-
-    let currentMinutes = 0;
-
-
-    // -------------------------
-    // DATE HELPERS
-    // -------------------------
-
-    function startOfWeek(date = new Date()) {
-
+    function mondayOf(date = new Date()) {
       const d = new Date(date);
-
       const day = d.getDay();
-
       const difference = day === 0 ? -6 : 1 - day;
 
       d.setDate(d.getDate() + difference);
-
       d.setHours(0, 0, 0, 0);
 
       return d;
     }
 
-
-    function endOfWeek(start) {
-
-      const end = new Date(start);
-
-      end.setDate(start.getDate() + 6);
-
-      return end;
+    function sundayOf(monday) {
+      const d = new Date(monday);
+      d.setDate(d.getDate() + 6);
+      return d;
     }
 
+    function dateID(date) {
+      return (
+        date.getFullYear() +
+        "-" +
+        String(date.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(date.getDate()).padStart(2, "0")
+      );
+    }
 
     function formatDate(date) {
-
       return date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric"
       });
-
     }
 
-
-    function weekID(date) {
-
-      const start = startOfWeek(date);
-
-      return start.getFullYear() + "-" +
-        String(start.getMonth() + 1).padStart(2, "0") + "-" +
-        String(start.getDate()).padStart(2, "0");
-    }
-
-
-    // -------------------------
-    // WEEKLY HISTORY
-    // -------------------------
-
-    function getHistory() {
-
+    function getData() {
       try {
-
-        return JSON.parse(
-          localStorage.getItem("150WeeklyHistory")
-        ) || [];
-
+        return JSON.parse(localStorage.getItem("150Data")) || {
+          weeks: {}
+        };
       } catch {
+        return {
+          weeks: {}
+        };
+      }
+    }
 
-        return [];
+    function saveData(data) {
+      localStorage.setItem(
+        "150Data",
+        JSON.stringify(data)
+      );
+    }
 
+    function getMinutesFromURL() {
+      const params = new URLSearchParams(window.location.search);
+
+      if (!params.has("minutes")) {
+        return null;
       }
 
+      const value = Number(params.get("minutes"));
+
+      if (!Number.isFinite(value) || value < 0) {
+        return null;
+      }
+
+      return Math.round(value);
     }
 
+    function saveCurrentWeek(minutes) {
+      const data = getData();
 
-    function saveHistory(history) {
+      const monday = mondayOf();
+      const id = dateID(monday);
 
-      localStorage.setItem(
-        "150WeeklyHistory",
-        JSON.stringify(history)
+      data.weeks[id] = {
+        start: id,
+        minutes: minutes
+      };
+
+      saveData(data);
+    }
+
+    function currentMinutes() {
+      const data = getData();
+      const id = dateID(mondayOf());
+
+      if (!data.weeks[id]) {
+        return 0;
+      }
+
+      return Number(data.weeks[id].minutes) || 0;
+    }
+
+    function renderCurrent() {
+      const now = new Date();
+
+      const weekday = now.toLocaleDateString(
+        "en-US",
+        { weekday: "long" }
       );
 
-    }
+      document.getElementById("today").textContent =
+        weekday;
 
-
-    function checkForNewWeek() {
-
-      const thisWeek = weekID(new Date());
-
-      const savedWeek =
-        localStorage.getItem("150CurrentWeek");
-
-      const savedMinutes =
-        Number(
-          localStorage.getItem("150CurrentMinutes")
-        ) || 0;
-
-
-      if (!savedWeek) {
-
-        localStorage.setItem(
-          "150CurrentWeek",
-          thisWeek
-        );
-
-        currentMinutes = savedMinutes;
-
-        return;
-      }
-
-
-      if (savedWeek !== thisWeek) {
-
-        const history = getHistory();
-
-        const oldStart =
-          new Date(savedWeek + "T00:00:00");
-
-        const oldEnd =
-          endOfWeek(oldStart);
-
-        const oldPercent =
-          Math.round(
-            (savedMinutes / WEEKLY_GOAL) * 100
-          );
-
-
-        history.unshift({
-
-          week:
-            formatDate(oldStart) +
-            " – " +
-            formatDate(oldEnd),
-
-          minutes: savedMinutes,
-
-          percent: oldPercent
-
-        });
-
-
-        saveHistory(history);
-
-
-        localStorage.setItem(
-          "150CurrentWeek",
-          thisWeek
-        );
-
-        localStorage.setItem(
-          "150CurrentMinutes",
-          "0"
-        );
-
-        currentMinutes = 0;
-
-      }
-
-      else {
-
-        currentMinutes = savedMinutes;
-
-      }
-
-    }
-
-
-    // -------------------------
-    // DISPLAY
-    // -------------------------
-
-    function updateDisplay() {
-
-      const start = startOfWeek();
-
-      const end = endOfWeek(start);
-
-
-      document.getElementById(
-        "weekLabel"
-      ).textContent =
-        formatDate(start) +
-        " – " +
-        formatDate(end);
-
+      const minutes = currentMinutes();
 
       const percent =
-        Math.round(
-          (currentMinutes / WEEKLY_GOAL) * 100
-        );
-
-
-      document.getElementById(
-        "currentMinutes"
-      ).textContent =
-        currentMinutes;
-
-
-      document.getElementById(
-        "percentage"
-      ).textContent =
-        "= " + percent + "%";
-
+        Math.round((minutes / GOAL) * 100);
 
       const remaining =
-        WEEKLY_GOAL - currentMinutes;
+        Math.max(0, GOAL - minutes);
 
+      /*
+        Monday = 1
+        Tuesday = 2
+        ...
+        Sunday = 7
+      */
+
+      const jsDay = now.getDay();
+
+      const dayNumber =
+        jsDay === 0 ? 7 : jsDay;
+
+      const target =
+        Math.round((GOAL * dayNumber) / 7);
+
+      const pace =
+        minutes - target;
+
+      document.getElementById("minutes").textContent =
+        minutes;
+
+      document.getElementById("percent").textContent =
+        percent + "%";
 
       const remainingElement =
         document.getElementById("remaining");
 
-
       if (remaining > 0) {
-
         remainingElement.textContent =
           remaining +
           (remaining === 1
             ? " minute remaining"
             : " minutes remaining");
-
-        remainingElement.className =
-          "remaining";
-
-      }
-
-      else {
-
+      } else {
         remainingElement.textContent =
           "150 minute goal reached";
-
-        remainingElement.className =
-          "remaining complete";
-
       }
 
+      document.getElementById("target").textContent =
+        target + " min";
 
-      renderHistory();
+      const paceElement =
+        document.getElementById("pace");
 
+      if (pace > 0) {
+        paceElement.textContent =
+          pace + " min ahead";
+
+        paceElement.className =
+          "pace-value ahead";
+
+      } else if (pace < 0) {
+        paceElement.textContent =
+          Math.abs(pace) + " min behind";
+
+        paceElement.className =
+          "pace-value behind";
+
+      } else {
+        paceElement.textContent =
+          "On target";
+
+        paceElement.className =
+          "pace-value on-target";
+      }
+
+      const monday = mondayOf();
+      const sunday = sundayOf(monday);
+
+      document.getElementById("weekLabel").textContent =
+        formatDate(monday) +
+        " – " +
+        formatDate(sunday);
     }
 
-
     function renderHistory() {
+      const data = getData();
+      const currentID = dateID(mondayOf());
 
-      const history = getHistory();
+      const weeks =
+        Object.values(data.weeks)
+          .filter(item => item.start !== currentID)
+          .sort((a, b) =>
+            b.start.localeCompare(a.start)
+          );
 
       const container =
         document.getElementById("history");
 
-
-      if (history.length === 0) {
-
+      if (weeks.length === 0) {
         container.innerHTML =
-          '<div class="history-empty">' +
-          'Your completed weeks will appear here.' +
+          '<div class="empty">' +
+          'Completed weeks will appear here.' +
           '</div>';
 
         return;
-
       }
 
-
       container.innerHTML =
-        history.map(item => {
+        weeks.map(item => {
+
+          const start =
+            new Date(item.start + "T00:00:00");
+
+          const end =
+            sundayOf(start);
+
+          const percent =
+            Math.round(
+              (item.minutes / GOAL) * 100
+            );
 
           return `
             <div class="history-row">
 
               <div class="history-week">
-                ${item.week}
+                ${formatDate(start)} – ${formatDate(end)}
               </div>
 
-              <div class="history-result">
-                ${item.minutes} / 150 minutes = ${item.percent}%
+              <div class="history-main">
+                ${item.minutes} / 150 minutes
+              </div>
+
+              <div class="history-percent">
+                Week completion: ${percent}%
               </div>
 
             </div>
           `;
-
         }).join("");
-
     }
 
+    function downloadBackup() {
+      const data = getData();
 
-    // -------------------------
-    // START APP
-    // -------------------------
+      const backup = {
+        app: "150",
+        version: 1,
+        created: new Date().toISOString(),
+        data: data
+      };
 
-    checkForNewWeek();
+      const blob =
+        new Blob(
+          [JSON.stringify(backup, null, 2)],
+          { type: "application/json" }
+        );
 
-    updateDisplay();
+      const url =
+        URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      const today =
+        new Date()
+          .toISOString()
+          .slice(0, 10);
+
+      link.href = url;
+
+      link.download =
+        "150-backup-" + today + ".json";
+
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function restoreBackup(event) {
+      const file =
+        event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      const reader =
+        new FileReader();
+
+      reader.onload = function () {
+        try {
+          const backup =
+            JSON.parse(reader.result);
+
+          if (
+            !backup ||
+            backup.app !== "150" ||
+            !backup.data ||
+            !backup.data.weeks
+          ) {
+            throw new Error();
+          }
+
+          saveData(backup.data);
+
+          renderCurrent();
+          renderHistory();
+
+          alert("150 history restored.");
+
+        } catch {
+          alert(
+            "This does not appear to be a valid 150 backup."
+          );
+        }
+
+        event.target.value = "";
+      };
+
+      reader.readAsText(file);
+    }
+
+    /*
+      If the Shortcut opened the app with:
+      ?minutes=76
+
+      save 76 as this week's current total.
+    */
+
+    const incomingMinutes =
+      getMinutesFromURL();
+
+    if (incomingMinutes !== null) {
+      saveCurrentWeek(incomingMinutes);
+
+      /*
+        Remove ?minutes= from the address after
+        saving it so refreshing the page does not
+        look like another update.
+      */
+
+      if (window.history.replaceState) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+      }
+    }
+
+    renderCurrent();
+    renderHistory();
 
   </script>
 
