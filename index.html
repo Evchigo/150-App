@@ -85,11 +85,19 @@
     }
 
     .remaining {
-      text-align: center;
-      margin: 24px 0;
-      font-size: 17px;
-      color: #6e6e73;
-    }
+  text-align: center;
+  margin: 24px 0 5px;
+  font-size: 17px;
+  color: #6e6e73;
+}
+
+.days-left {
+  text-align: center;
+  margin: 0 0 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6e6e73;
+}
 
     .pace-section {
       border-top: 1px solid #eeeeef;
@@ -223,6 +231,7 @@
 
       <div class="remaining" id="remaining">
         150 minutes remaining
+        6 days remaining
       </div>
 
       <div class="pace-section">
@@ -402,10 +411,27 @@
       const jsDay = now.getDay();
 
       const dayNumber =
-        jsDay === 0 ? 7 : jsDay;
+  jsDay === 0 ? 7 : jsDay;
 
-      const target =
-        Math.round((GOAL * dayNumber) / 7);
+const daysLeft =
+  7 - dayNumber;
+
+const daysLeftElement =
+  document.getElementById("daysLeft");
+
+if (daysLeft === 0) {
+  daysLeftElement.textContent =
+    "Last day";
+} else if (daysLeft === 1) {
+  daysLeftElement.textContent =
+    "1 day left";
+} else {
+  daysLeftElement.textContent =
+    daysLeft + " days left";
+}
+
+const target =
+  Math.round((GOAL * dayNumber) / 7);
 
       const pace =
         minutes - target;
