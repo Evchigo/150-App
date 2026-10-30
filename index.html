@@ -146,6 +146,38 @@
       font-size: 20px;
     }
 
+    .daily-list {
+      margin-top: 4px;
+    }
+
+    .daily-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 13px 0;
+      border-bottom: 1px solid #eeeeef;
+      font-size: 16px;
+    }
+
+    .daily-row:last-child {
+      border-bottom: none;
+    }
+
+    .daily-day {
+      color: #1d1d1f;
+    }
+
+    .daily-minutes {
+      font-weight: 650;
+      text-align: right;
+    }
+
+    .daily-today {
+      color: #31a354;
+      font-weight: 650;
+    }
+
     .history-row {
       padding: 15px 0;
       border-bottom: 1px solid #eeeeef;
@@ -265,6 +297,14 @@
 
     <section class="card">
 
+      <h2>This Week</h2>
+
+      <div class="daily-list" id="dailyList"></div>
+
+    </section>
+
+    <section class="card">
+
       <h2>Weekly History</h2>
 
       <div id="history"></div>
@@ -298,6 +338,26 @@
 
   <script>
     const GOAL = 150;
+
+    const DAY_NAMES = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ];
+
+    const DAY_PARAMETERS = [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ];
 
     function mondayOf(date = new Date()) {
       const d = new Date(date);
@@ -337,11 +397,21 @@
 
     function getData() {
       try {
-        return JSON.parse(
-          localStorage.getItem("150Data")
-        ) || {
+        const saved =
+          JSON.parse(localStorage.getItem("150Data"));
+
+        if (
+          saved &&
+          saved.weeks &&
+          typeof saved.weeks === "object"
+        ) {
+          return saved;
+        }
+
+        return {
           weeks: {}
         };
+
       } catch {
         return {
           weeks: {}
@@ -356,47 +426,129 @@
       );
     }
 
-    function getMinutesFromURL() {
+    function cleanNumber(value) {
+      const number = Number(value);
+
+      if (!Number.isFinite(number) || number < 0) {
+        return null;
+      }
+
+      return Math.round(number);
+    }
+
+    function getIncomingUpdate() {
       const params =
         new URLSearchParams(window.location.search);
 
-      if (!params.has("minutes")) {
+      const dailyMinutes = [];
+      let hasDailyValues = false;
+
+      DAY_PARAMETERS.forEach(parameter => {
+        if (params.has(parameter)) {
+          hasDailyValues = true;
+
+          const value =
+            cleanNumber(params.get(parameter));
+
+          dailyMinutes.push(
+            value === null ? 0 : value
+          );
+        } else {
+          dailyMinutes.push(0);
+        }
+      });
+
+      let weeklyMinutes = null;
+
+      if (params.has("minutes")) {
+        weeklyMinutes =
+          cleanNumber(params.get("minutes"));
+      }
+
+      /*
+        The seven daily totals are the most
+        reliable source when they are present.
+        Add them together to calculate the
+        weekly total automatically.
+      */
+
+      if (hasDailyValues) {
+        weeklyMinutes =
+          dailyMinutes.reduce(
+            (total, value) => total + value,
+            0
+          );
+      }
+
+      if (
+        weeklyMinutes === null &&
+        !hasDailyValues
+      ) {
         return null;
       }
 
-      const value =
-        Number(params.get("minutes"));
-
-      if (!Number.isFinite(value) || value < 0) {
-        return null;
-      }
-
-      return Math.round(value);
+      return {
+        minutes: weeklyMinutes || 0,
+        dailyMinutes: dailyMinutes
+      };
     }
 
-    function saveCurrentWeek(minutes) {
+    function saveCurrentWeek(update) {
       const data = getData();
 
       const monday = mondayOf();
       const id = dateID(monday);
 
-      data.weeks[id] = {
-        start: id,
-        minutes: minutes
-      };
+      const existing =
+        data.weeks[id] || {
+          start: id,
+          minutes: 0,
+          dailyMinutes: [0, 0, 0, 0, 0, 0, 0]
+        };
+
+      existing.start = id;
+      existing.minutes = update.minutes;
+
+      if (
+        Array.isArray(update.dailyMinutes) &&
+        update.dailyMinutes.length === 7
+      ) {
+        existing.dailyMinutes =
+          update.dailyMinutes;
+      }
+
+      data.weeks[id] = existing;
 
       saveData(data);
     }
 
-    function currentMinutes() {
+    function currentWeekData() {
       const data = getData();
       const id = dateID(mondayOf());
 
-      if (!data.weeks[id]) {
-        return 0;
+      const week =
+        data.weeks[id];
+
+      if (!week) {
+        return {
+          start: id,
+          minutes: 0,
+          dailyMinutes: [0, 0, 0, 0, 0, 0, 0]
+        };
       }
 
-      return Number(data.weeks[id].minutes) || 0;
+      return {
+        start: week.start || id,
+        minutes:
+          cleanNumber(week.minutes) || 0,
+        dailyMinutes:
+          Array.isArray(week.dailyMinutes) &&
+          week.dailyMinutes.length === 7
+            ? week.dailyMinutes.map(value =>
+                cleanNumber(value) || 0
+              )
+            : [0, 0, 0, 0, 0, 0, 0]
+      };
     }
 
     function renderCurrent() {
@@ -410,24 +562,17 @@
       document.getElementById("today").textContent =
         weekday;
 
+      const week =
+        currentWeekData();
+
       const minutes =
-        currentMinutes();
+        week.minutes;
 
       const percent =
         Math.round((minutes / GOAL) * 100);
 
       const remaining =
         Math.max(0, GOAL - minutes);
-
-      /*
-        Monday = 1
-        Tuesday = 2
-        Wednesday = 3
-        Thursday = 4
-        Friday = 5
-        Saturday = 6
-        Sunday = 7
-      */
 
       const jsDay =
         now.getDay();
@@ -518,6 +663,46 @@
         formatDate(sunday);
     }
 
+    function renderDailyMinutes() {
+      const week =
+        currentWeekData();
+
+      const now =
+        new Date();
+
+      const jsDay =
+        now.getDay();
+
+      const todayIndex =
+        jsDay === 0 ? 6 : jsDay - 1;
+
+      const container =
+        document.getElementById("dailyList");
+
+      container.innerHTML =
+        DAY_NAMES.map((day, index) => {
+          const minutes =
+            week.dailyMinutes[index] || 0;
+
+          const dayClass =
+            index === todayIndex
+              ? "daily-day daily-today"
+              : "daily-day";
+
+          return `
+            <div class="daily-row">
+              <span class="${dayClass}">
+                ${day}
+              </span>
+
+              <span class="daily-minutes">
+                ${minutes} min
+              </span>
+            </div>
+          `;
+        }).join("");
+    }
+
     function renderHistory() {
       const data = getData();
 
@@ -555,9 +740,12 @@
           const end =
             sundayOf(start);
 
+          const minutes =
+            cleanNumber(item.minutes) || 0;
+
           const percent =
             Math.round(
-              (item.minutes / GOAL) * 100
+              (minutes / GOAL) * 100
             );
 
           return `
@@ -568,7 +756,7 @@
               </div>
 
               <div class="history-main">
-                ${item.minutes} / 150 minutes
+                ${minutes} / 150 minutes
               </div>
 
               <div class="history-percent">
@@ -586,7 +774,7 @@
 
       const backup = {
         app: "150",
-        version: 1,
+        version: 2,
         created: new Date().toISOString(),
         data: data
       };
@@ -657,6 +845,7 @@
           saveData(backup.data);
 
           renderCurrent();
+          renderDailyMinutes();
           renderHistory();
 
           alert("150 history restored.");
@@ -673,20 +862,11 @@
       reader.readAsText(file);
     }
 
-    /*
-      When the Shortcut opens a URL such as:
+    const incomingUpdate =
+      getIncomingUpdate();
 
-      ?minutes=94
-
-      save 94 as the latest total for the
-      current Monday-through-Sunday week.
-    */
-
-    const incomingMinutes =
-      getMinutesFromURL();
-
-    if (incomingMinutes !== null) {
-      saveCurrentWeek(incomingMinutes);
+    if (incomingUpdate !== null) {
+      saveCurrentWeek(incomingUpdate);
 
       if (window.history.replaceState) {
         window.history.replaceState(
@@ -698,6 +878,7 @@
     }
 
     renderCurrent();
+    renderDailyMinutes();
     renderHistory();
   </script>
 
