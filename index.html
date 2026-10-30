@@ -25,8 +25,13 @@
       min-height: 100vh;
       background: #f5f5f7;
       color: #1d1d1f;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-        "SF Pro Text", Arial, sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        Arial,
+        sans-serif;
     }
 
     .app {
@@ -45,8 +50,8 @@
     }
 
     .header h1 {
-      font-size: 34px;
       margin: 0 0 6px;
+      font-size: 34px;
     }
 
     .header p {
@@ -56,52 +61,52 @@
     }
 
     .card {
+      margin-bottom: 18px;
+      padding: 26px 22px;
       background: white;
       border-radius: 24px;
-      padding: 26px 22px;
-      margin-bottom: 18px;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
     }
 
     .today {
-      font-size: 23px;
-      font-weight: 700;
       margin-bottom: 22px;
       text-align: center;
+      font-size: 23px;
+      font-weight: 700;
     }
 
     .main-number {
+      margin-bottom: 7px;
+      text-align: center;
       font-size: 30px;
       font-weight: 750;
-      text-align: center;
-      margin-bottom: 7px;
     }
 
     .completion {
       color: #31a354;
+      text-align: center;
       font-size: 18px;
       font-weight: 650;
-      text-align: center;
     }
 
     .remaining {
-  text-align: center;
-  margin: 24px 0 5px;
-  font-size: 17px;
-  color: #6e6e73;
-}
+      margin: 24px 0 5px;
+      color: #6e6e73;
+      text-align: center;
+      font-size: 17px;
+    }
 
-.days-left {
-  text-align: center;
-  margin: 0 0 24px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #6e6e73;
-}
+    .days-left {
+      margin: 0 0 24px;
+      color: #6e6e73;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+    }
 
     .pace-section {
-      border-top: 1px solid #eeeeef;
       padding-top: 20px;
+      border-top: 1px solid #eeeeef;
     }
 
     .pace-row {
@@ -113,8 +118,8 @@
     }
 
     .pace-value {
-      font-weight: 650;
       text-align: right;
+      font-weight: 650;
     }
 
     .ahead {
@@ -130,15 +135,15 @@
     }
 
     .week-label {
-      text-align: center;
-      color: #8e8e93;
-      font-size: 13px;
       margin-top: 20px;
+      color: #8e8e93;
+      text-align: center;
+      font-size: 13px;
     }
 
     h2 {
-      font-size: 20px;
       margin: 0 0 14px;
+      font-size: 20px;
     }
 
     .history-row {
@@ -151,9 +156,9 @@
     }
 
     .history-week {
+      margin-bottom: 5px;
       color: #6e6e73;
       font-size: 14px;
-      margin-bottom: 5px;
     }
 
     .history-main {
@@ -162,15 +167,15 @@
     }
 
     .history-percent {
+      margin-top: 3px;
       color: #6e6e73;
       font-size: 14px;
-      margin-top: 3px;
     }
 
     .empty {
-      text-align: center;
-      color: #8e8e93;
       padding: 20px 0;
+      color: #8e8e93;
+      text-align: center;
       font-size: 14px;
     }
 
@@ -183,15 +188,15 @@
     button,
     .restore-label {
       flex: 1;
-      border: none;
       padding: 12px;
+      border: none;
       border-radius: 12px;
       background: #efeff4;
       color: #1d1d1f;
+      text-align: center;
       font: inherit;
       font-size: 14px;
       font-weight: 600;
-      text-align: center;
       cursor: pointer;
     }
 
@@ -200,10 +205,10 @@
     }
 
     .saved-note {
-      text-align: center;
-      color: #8e8e93;
-      font-size: 12px;
       margin-top: 16px;
+      color: #8e8e93;
+      text-align: center;
+      font-size: 12px;
     }
   </style>
 </head>
@@ -226,11 +231,15 @@
       </div>
 
       <div class="completion">
-        Week completion: <span id="percent">0%</span>
+        Week completion:
+        <span id="percent">0%</span>
       </div>
 
       <div class="remaining" id="remaining">
         150 minutes remaining
+      </div>
+
+      <div class="days-left" id="daysLeft">
         6 days left
       </div>
 
@@ -238,7 +247,9 @@
 
         <div class="pace-row">
           <span>Today's target:</span>
-          <span class="pace-value" id="target">0 min</span>
+          <span class="pace-value" id="target">
+            0 min
+          </span>
         </div>
 
         <div class="pace-row">
@@ -260,12 +271,13 @@
 
       <div class="backup-buttons">
 
-        <button onclick="downloadBackup()">
+        <button type="button" onclick="downloadBackup()">
           Backup History
         </button>
 
         <label class="restore-label">
           Restore History
+
           <input
             id="restoreFile"
             type="file"
@@ -285,7 +297,6 @@
   </main>
 
   <script>
-
     const GOAL = 150;
 
     function mondayOf(date = new Date()) {
@@ -301,7 +312,9 @@
 
     function sundayOf(monday) {
       const d = new Date(monday);
+
       d.setDate(d.getDate() + 6);
+
       return d;
     }
 
@@ -324,7 +337,9 @@
 
     function getData() {
       try {
-        return JSON.parse(localStorage.getItem("150Data")) || {
+        return JSON.parse(
+          localStorage.getItem("150Data")
+        ) || {
           weeks: {}
         };
       } catch {
@@ -342,13 +357,15 @@
     }
 
     function getMinutesFromURL() {
-      const params = new URLSearchParams(window.location.search);
+      const params =
+        new URLSearchParams(window.location.search);
 
       if (!params.has("minutes")) {
         return null;
       }
 
-      const value = Number(params.get("minutes"));
+      const value =
+        Number(params.get("minutes"));
 
       if (!Number.isFinite(value) || value < 0) {
         return null;
@@ -385,15 +402,16 @@
     function renderCurrent() {
       const now = new Date();
 
-      const weekday = now.toLocaleDateString(
-        "en-US",
-        { weekday: "long" }
-      );
+      const weekday =
+        now.toLocaleDateString("en-US", {
+          weekday: "long"
+        });
 
       document.getElementById("today").textContent =
         weekday;
 
-      const minutes = currentMinutes();
+      const minutes =
+        currentMinutes();
 
       const percent =
         Math.round((minutes / GOAL) * 100);
@@ -404,34 +422,24 @@
       /*
         Monday = 1
         Tuesday = 2
-        ...
+        Wednesday = 3
+        Thursday = 4
+        Friday = 5
+        Saturday = 6
         Sunday = 7
       */
 
-      const jsDay = now.getDay();
+      const jsDay =
+        now.getDay();
 
       const dayNumber =
-  jsDay === 0 ? 7 : jsDay;
+        jsDay === 0 ? 7 : jsDay;
 
-const daysLeft =
-  7 - dayNumber;
+      const daysLeft =
+        7 - dayNumber;
 
-const daysLeftElement =
-  document.getElementById("daysLeft");
-
-if (daysLeft === 0) {
-  daysLeftElement.textContent =
-    "Last day";
-} else if (daysLeft === 1) {
-  daysLeftElement.textContent =
-    "1 day left";
-} else {
-  daysLeftElement.textContent =
-    daysLeft + " days left";
-}
-
-const target =
-  Math.round((GOAL * dayNumber) / 7);
+      const target =
+        Math.round((GOAL * dayNumber) / 7);
 
       const pace =
         minutes - target;
@@ -454,6 +462,20 @@ const target =
       } else {
         remainingElement.textContent =
           "150 minute goal reached";
+      }
+
+      const daysLeftElement =
+        document.getElementById("daysLeft");
+
+      if (daysLeft === 0) {
+        daysLeftElement.textContent =
+          "Last day";
+      } else if (daysLeft === 1) {
+        daysLeftElement.textContent =
+          "1 day left";
+      } else {
+        daysLeftElement.textContent =
+          daysLeft + " days left";
       }
 
       document.getElementById("target").textContent =
@@ -484,8 +506,11 @@ const target =
           "pace-value on-target";
       }
 
-      const monday = mondayOf();
-      const sunday = sundayOf(monday);
+      const monday =
+        mondayOf();
+
+      const sunday =
+        sundayOf(monday);
 
       document.getElementById("weekLabel").textContent =
         formatDate(monday) +
@@ -495,11 +520,15 @@ const target =
 
     function renderHistory() {
       const data = getData();
-      const currentID = dateID(mondayOf());
+
+      const currentID =
+        dateID(mondayOf());
 
       const weeks =
         Object.values(data.weeks)
-          .filter(item => item.start !== currentID)
+          .filter(item =>
+            item.start !== currentID
+          )
           .sort((a, b) =>
             b.start.localeCompare(a.start)
           );
@@ -518,9 +547,10 @@ const target =
 
       container.innerHTML =
         weeks.map(item => {
-
           const start =
-            new Date(item.start + "T00:00:00");
+            new Date(
+              item.start + "T00:00:00"
+            );
 
           const end =
             sundayOf(start);
@@ -551,7 +581,8 @@ const target =
     }
 
     function downloadBackup() {
-      const data = getData();
+      const data =
+        getData();
 
       const backup = {
         app: "150",
@@ -563,7 +594,9 @@ const target =
       const blob =
         new Blob(
           [JSON.stringify(backup, null, 2)],
-          { type: "application/json" }
+          {
+            type: "application/json"
+          }
         );
 
       const url =
@@ -577,14 +610,23 @@ const target =
           .toISOString()
           .slice(0, 10);
 
-      link.href = url;
+      link.href =
+        url;
 
       link.download =
-        "150-backup-" + today + ".json";
+        "150-backup-" +
+        today +
+        ".json";
+
+      document.body.appendChild(link);
 
       link.click();
 
-      URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
     }
 
     function restoreBackup(event) {
@@ -632,10 +674,12 @@ const target =
     }
 
     /*
-      If the Shortcut opened the app with:
-      ?minutes=76
+      When the Shortcut opens a URL such as:
 
-      save 76 as this week's current total.
+      ?minutes=94
+
+      save 94 as the latest total for the
+      current Monday-through-Sunday week.
     */
 
     const incomingMinutes =
@@ -643,12 +687,6 @@ const target =
 
     if (incomingMinutes !== null) {
       saveCurrentWeek(incomingMinutes);
-
-      /*
-        Remove ?minutes= from the address after
-        saving it so refreshing the page does not
-        look like another update.
-      */
 
       if (window.history.replaceState) {
         window.history.replaceState(
@@ -661,7 +699,6 @@ const target =
 
     renderCurrent();
     renderHistory();
-
   </script>
 
 </body>
