@@ -359,6 +359,8 @@
       "sun"
     ];
 
+    // Uses the device's local calendar date.
+    // JavaScript automatically accounts for local DST changes.
     function mondayOf(date = new Date()) {
       const d = new Date(date);
       const day = d.getDay();
@@ -374,6 +376,7 @@
       const d = new Date(monday);
 
       d.setDate(d.getDate() + 6);
+      d.setHours(0, 0, 0, 0);
 
       return d;
     }
@@ -465,13 +468,7 @@
           cleanNumber(params.get("minutes"));
       }
 
-      /*
-        The seven daily totals are the most
-        reliable source when they are present.
-        Add them together to calculate the
-        weekly total automatically.
-      */
-
+      // Daily totals are the primary source when supplied.
       if (hasDailyValues) {
         weeklyMinutes =
           dailyMinutes.reduce(
@@ -493,6 +490,14 @@
       };
     }
 
+    /*
+      Save the current Monday-to-Sunday week.
+
+      Safety protection:
+      Exercise Minutes should only increase during
+      an active week. A lower or zero Shortcut result
+      cannot erase a higher total already saved.
+    */
     function saveCurrentWeek(update) {
       const data = getData();
 
@@ -506,16 +511,34 @@
           dailyMinutes: [0, 0, 0, 0, 0, 0, 0]
         };
 
-      existing.start = id;
-      existing.minutes = update.minutes;
-
-      if (
+      const incomingDaily =
         Array.isArray(update.dailyMinutes) &&
         update.dailyMinutes.length === 7
-      ) {
-        existing.dailyMinutes =
-          update.dailyMinutes;
+          ? update.dailyMinutes.map(value =>
+              cleanNumber(value) || 0
+            )
+          : null;
+
+      const incomingMinutes =
+        incomingDaily
+          ? incomingDaily.reduce(
+              (total, value) => total + value,
+              0
+            )
+          : cleanNumber(update.minutes) || 0;
+
+      const existingMinutes =
+        cleanNumber(existing.minutes) || 0;
+
+      if (incomingMinutes >= existingMinutes) {
+        existing.minutes = incomingMinutes;
+
+        if (incomingDaily) {
+          existing.dailyMinutes = incomingDaily;
+        }
       }
+
+      existing.start = id;
 
       data.weeks[id] = existing;
 
@@ -774,7 +797,7 @@
 
       const backup = {
         app: "150",
-        version: 2,
+        version: 3,
         created: new Date().toISOString(),
         data: data
       };
@@ -793,10 +816,18 @@
       const link =
         document.createElement("a");
 
+      /*
+        Use the local calendar date for the filename
+        rather than the UTC date.
+      */
+      const localNow = new Date();
+
       const today =
-        new Date()
-          .toISOString()
-          .slice(0, 10);
+        localNow.getFullYear() +
+        "-" +
+        String(localNow.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(localNow.getDate()).padStart(2, "0");
 
       link.href =
         url;
