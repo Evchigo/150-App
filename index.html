@@ -499,51 +499,85 @@
       cannot erase a higher total already saved.
     */
     function saveCurrentWeek(update) {
-      const data = getData();
+  const data = getData();
+  const params = new URLSearchParams(
+    window.location.search
+  );
 
-      const monday = mondayOf();
-      const id = dateID(monday);
+  const currentID = dateID(mondayOf());
+  const shortcutWeekID = params.get("week");
 
-      const existing =
-        data.weeks[id] || {
-          start: id,
-          minutes: 0,
-          dailyMinutes: [0, 0, 0, 0, 0, 0, 0]
-        };
+  /*
+    Use the WeekID sent by the Shortcut.
+    If it is missing or invalid, use the current week.
+  */
+  const validWeekID =
+    /^\d{*}-\d{2}-\d{2}$/.test(shortcutWeekID || "")
+      ? shortcutWeekID
+      : currentID;
 
-      const incomingDaily =
-        Array.isArray(update.dailyMinutes) &&
-        update.dailyMinutes.length === 7
-          ? update.dailyMinutes.map(value =>
-              cleanNumber(value) || 0
-            )
-          : null;
+  const incomingDaily =
+    Array.isArray(update.dailyMinutes) &&
+    update.dailyMinutes.length === 7
+      ? update.dailyMinutes.map(value =>
+          cleanNumber(value) || 0
+        )
+      : [0, 0, 0, 0, 0, 0, 0];
 
-      const incomingMinutes =
-        incomingDaily
-          ? incomingDaily.reduce(
-              (total, value) => total + value,
-              0
-            )
-          : cleanNumber(update.minutes) || 0;
+  const incomingMinutes =
+    incomingDaily.reduce(
+      (total, value) => total + value,
+      0
+    );
 
-      const existingMinutes =
-        cleanNumber(existing.minutes) || 0;
+  const existingCurrentWeek =
+    data.weeks[currentID];
 
-      if (incomingMinutes >= existingMinutes) {
-        existing.minutes = incomingMinutes;
+  /*
+    One-time repair:
+    If the new Monday currently contains last week's
+    larger total, move that total into the prior week.
+  */
+  if (
+    validWeekID === currentID &&
+    existingCurrentWeek &&
+    (cleanNumber(existingCurrentWeek.minutes) || 0) >
+      incomingMinutes
+  ) {
+    const priorMonday = new Date(mondayOf());
+    priorMonday.setDate(priorMonday.getDate() - 7);
 
-        if (incomingDaily) {
-          existing.dailyMinutes = incomingDaily;
-        }
-      }
+    const priorID = dateID(priorMonday);
 
-      existing.start = id;
-
-      data.weeks[id] = existing;
-
-      saveData(data);
+    if (!data.weeks[priorID]) {
+      data.weeks[priorID] = {
+        start: priorID,
+        minutes:
+          cleanNumber(existingCurrentWeek.minutes) || 0,
+        dailyMinutes:
+          Array.isArray(existingCurrentWeek.dailyMinutes) &&
+          existingCurrentWeek.dailyMinutes.length === 7
+            ? existingCurrentWeek.dailyMinutes.map(value =>
+                cleanNumber(value) || 0
+              )
+            : [0, 0, 0, 0, 0, 0, 0]
+      };
     }
+  }
+
+  /*
+    Save the Shortcut totals under the exact week
+    identified by WeekID, including a valid zero.
+  */
+  data.weeks[validWeekID] = {
+    start: validWeekID,
+    minutes: incomingMinutes,
+    dailyMinutes: incomingDaily,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveData(data);
+}
 
     function currentWeekData() {
       const data = getData();
